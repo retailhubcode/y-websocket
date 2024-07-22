@@ -3,7 +3,10 @@
 const WebSocket = require("ws");
 const http = require("http");
 const number = require("lib0/number");
-const wss = new WebSocket.Server({ noServer: true });
+const wss = new WebSocket.Server({
+  noServer: true,
+  maxPayload: 500 * 1024 * 1024,
+});
 const setupWSConnection = require("./utils.cjs").setupWSConnection;
 
 const host = process.env.HOST || "localhost";
