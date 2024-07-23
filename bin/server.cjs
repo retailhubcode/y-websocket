@@ -94,12 +94,12 @@ server.on("upgrade", async (request, socket, head) => {
     socket,
     head,
     /** @param {any} ws */ (ws) => {
-      ws.authorization = authorization;
-      ws.roomType = roomType;
-      ws.siteId = siteId;
-      ws.pageId = pageId;
-
-      wss.emit("connection", ws, request);
+      wss.emit("connection", ws, request, {
+        authorization,
+        roomType,
+        siteId,
+        pageId,
+      });
     }
   );
 });

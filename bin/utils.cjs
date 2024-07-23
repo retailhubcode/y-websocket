@@ -1,4 +1,4 @@
-const axios = require("axios");
+const axios = require("axios").default;
 
 const Y = require("yjs");
 const syncProtocol = require("y-protocols/sync");
@@ -123,7 +123,7 @@ class WSSharedDoc extends Y.Doc {
     /**
      * @type {any}
      */
-    this.authToken = null;
+    this.authorization = null;
     /**
      * @type {any}
      */
@@ -272,6 +272,8 @@ const closeConn = (doc, conn) => {
 
     if (doc.conns.size === 0) {
       clearInterval(doc.timeout);
+
+      console.log("Cleared interval");
     }
 
     if (doc.conns.size === 0 && persistence !== null) {
@@ -319,7 +321,7 @@ exports.setupWSConnection = (
   {
     docName = (req.url || "").slice(1).split("?")[0],
     gc = true,
-    authToken,
+    authorization,
     roomType,
     siteId,
     pageId,
@@ -329,37 +331,81 @@ exports.setupWSConnection = (
   // get doc, initialize if it does not exist yet
   const doc = getYDoc(docName, gc);
 
-  doc.authToken = authToken;
-  doc.roomType = roomType;
-  doc.siteId = siteId;
-  doc.pageId = pageId;
+  // doc.authorization = authorization;
+  // doc.roomType = roomType;
+  // doc.siteId = siteId;
+  // doc.pageId = pageId;
+
+  console.log("doc.conns.size", doc.conns.size);
 
   if (doc.conns.size === 0) {
-    doc.timeout = setInterval(async () => {
-      try {
-        if (doc.roomType === "page-components") {
-          const json = {};
+    if (roomType === "page-components") {
+      console.log("Set interval");
+
+      clearInterval(doc.timeout);
+
+      doc.timeout = setInterval(async () => {
+        try {
+          const pageData = {};
 
           doc.share.forEach((value, key) => {
-            json[key] = value.toJSON();
+            const val = doc.getMap(key);
+
+            pageData[key] = val.toJSON();
           });
 
-          console.log("json", json);
+          console.log(
+            `Fetching page data: ${cmsHostname}/api/pages/${siteId}/${pageId}`
+          );
 
-          // const originalData = (await axios.get(
-          //   `${cmsHostname}/api/pages/${siteId}/${pageId}`
-          // )).data
-          // await axios.patch(`${cmsHostname}/api/pages/${siteId}/${pageId}`, {
-          //   ...originalData,
-          //   draft:
-          // });
+          console.log(`Authorization: ${authorization}`);
+
+          const originalData = (
+            await axios.get(`${cmsHostname}/api/pages/${siteId}/${pageId}`, {
+              headers: {
+                Authorization: authorization,
+              },
+            })
+          ).data;
+
+          console.log(
+            `Saving page draft: ${cmsHostname}/api/pages/${siteId}/${pageId}`
+          );
+
+          await axios.patch(
+            `${cmsHostname}/api/pages/${siteId}/${pageId}`,
+            {
+              ...originalData,
+
+              draft: {
+                components: pageData.rootComponents
+                  .map((componentId) => pageData.components[componentId])
+                  .filter((component) => component)
+                  .map((component) => {
+                    return {
+                      uuid: component.id,
+                      title: "",
+                      component: component.name,
+                      componentData: component.data,
+                    };
+                  }),
+              },
+            },
+            {
+              headers: {
+                Authorization: authorization,
+              },
+            }
+          );
+
+          console.log(`Saved page draft successfully`);
+        } catch (error) {
+          console.error(
+            `Failed to auto-save page: ${cmsHostname}/api/pages/${siteId}/${pageId}. Error: ${error}`
+          );
         }
-      } catch (error) {
-        console.error(
-          `Failed to auto-save page ${doc.pageId}. Error: ${error}`
-        );
-      }
-    }, 60000);
+      }, 60000);
+    }
   }
 
   doc.conns.set(conn, new Set());
