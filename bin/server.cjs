@@ -55,10 +55,10 @@ server.on("upgrade", async (request, socket, head) => {
   //   return;
   // }
 
-  try {
-    const [_roomType, siteId, pageId] = roomId.split(":");
+  const [roomType, siteId, pageId] = roomId.split(":");
 
-    if (pageId) {
+  try {
+    if (roomType === "page-components") {
       await fetch(`${cmsHostname}/api/pages/${siteId}/${pageId}`, {
         headers: {
           Authorization: authorization,
@@ -66,7 +66,7 @@ server.on("upgrade", async (request, socket, head) => {
           Referer: `${cmsHostname}/`,
         },
       });
-    } else {
+    } else if (roomType === "header" || roomType === "footer") {
       await fetch(`${cmsHostname}/api/pages/${siteId}`, {
         headers: {
           Authorization: authorization,
@@ -74,6 +74,10 @@ server.on("upgrade", async (request, socket, head) => {
           Referer: `${cmsHostname}/`,
         },
       });
+    } else {
+      console.log("Invalid room type.");
+      socket.destroy();
+      return;
     }
   } catch (error) {
     console.log(`Unauthorized user. ${error}`);
@@ -90,6 +94,11 @@ server.on("upgrade", async (request, socket, head) => {
     socket,
     head,
     /** @param {any} ws */ (ws) => {
+      ws.authorization = authorization;
+      ws.roomType = roomType;
+      ws.siteId = siteId;
+      ws.pageId = pageId;
+
       wss.emit("connection", ws, request);
     }
   );
