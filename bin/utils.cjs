@@ -20,7 +20,8 @@ const CALLBACK_DEBOUNCE_MAXWAIT = parseInt(
   process.env.CALLBACK_DEBOUNCE_MAXWAIT || "10000"
 );
 
-const cmsHostname = process.env.CMS_HOSTNAME || "https://admin.useaudacity.com";
+const cmsHostname =
+  process.env.CMS_HOSTNAME || "https://admin.retailhub.com.br";
 
 const wsReadyStateConnecting = 0;
 const wsReadyStateOpen = 1;
