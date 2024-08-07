@@ -21,7 +21,7 @@ const CALLBACK_DEBOUNCE_MAXWAIT = parseInt(
 );
 
 const cmsHostname =
-  process.env.CMS_HOSTNAME || "https://admin.retailhub.com.br";
+  process.env.CMS_HOSTNAME || "https://api-prod.retailhub.com.br";
 
 const wsReadyStateConnecting = 0;
 const wsReadyStateOpen = 1;
@@ -87,6 +87,81 @@ const messageAwareness = 1;
  * @param {any} _tr
  */
 const updateHandler = (update, _origin, doc, _tr) => {
+  if (doc.roomType === "page-components") {
+    if (!doc.timeout) {
+      console.log("Auto-saving draft");
+
+      (async () => {
+        try {
+          const pageData = {};
+
+          doc.share.forEach((value, key) => {
+            const val = doc.getMap(key);
+
+            pageData[key] = val.toJSON();
+          });
+
+          console.log(
+            `Fetching page data: ${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`
+          );
+
+          console.log(`Authorization: ${doc.authorization}`);
+
+          const originalData = (
+            await axios.get(
+              `${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`,
+              {
+                headers: {
+                  Authorization: doc.authorization,
+                },
+              }
+            )
+          ).data;
+
+          console.log(
+            `Saving page draft: ${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`
+          );
+
+          await axios.patch(
+            `${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`,
+            {
+              ...originalData,
+
+              draft: {
+                components: pageData.rootComponents
+                  .map((componentId) => pageData.components[componentId])
+                  .filter((component) => component)
+                  .map((component) => {
+                    return {
+                      uuid: component.id,
+                      title: "",
+                      component: component.name,
+                      componentData: component.data,
+                    };
+                  }),
+              },
+            },
+            {
+              headers: {
+                Authorization: doc.authorization,
+              },
+            }
+          );
+
+          console.log(`Saved page draft successfully`);
+        } catch (error) {
+          console.error(
+            `Failed to auto-save page: ${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}. Error: ${error}`
+          );
+        }
+      })();
+
+      doc.timeout = setInterval(() => {
+        doc.timeout = null;
+      }, 60000);
+    }
+  }
+
   const encoder = encoding.createEncoder();
   encoding.writeVarUint(encoder, messageSync);
   syncProtocol.writeUpdate(encoder, update);
@@ -332,82 +407,10 @@ exports.setupWSConnection = (
   // get doc, initialize if it does not exist yet
   const doc = getYDoc(docName, gc);
 
-  // doc.authorization = authorization;
-  // doc.roomType = roomType;
-  // doc.siteId = siteId;
-  // doc.pageId = pageId;
-
-  console.log("doc.conns.size", doc.conns.size);
-
-  if (doc.conns.size === 0) {
-    if (roomType === "page-components") {
-      console.log("Set interval");
-
-      clearInterval(doc.timeout);
-
-      doc.timeout = setInterval(async () => {
-        try {
-          const pageData = {};
-
-          doc.share.forEach((value, key) => {
-            const val = doc.getMap(key);
-
-            pageData[key] = val.toJSON();
-          });
-
-          console.log(
-            `Fetching page data: ${cmsHostname}/api/pages/${siteId}/${pageId}`
-          );
-
-          console.log(`Authorization: ${authorization}`);
-
-          const originalData = (
-            await axios.get(`${cmsHostname}/api/pages/${siteId}/${pageId}`, {
-              headers: {
-                Authorization: authorization,
-              },
-            })
-          ).data;
-
-          console.log(
-            `Saving page draft: ${cmsHostname}/api/pages/${siteId}/${pageId}`
-          );
-
-          await axios.patch(
-            `${cmsHostname}/api/pages/${siteId}/${pageId}`,
-            {
-              ...originalData,
-
-              draft: {
-                components: pageData.rootComponents
-                  .map((componentId) => pageData.components[componentId])
-                  .filter((component) => component)
-                  .map((component) => {
-                    return {
-                      uuid: component.id,
-                      title: "",
-                      component: component.name,
-                      componentData: component.data,
-                    };
-                  }),
-              },
-            },
-            {
-              headers: {
-                Authorization: authorization,
-              },
-            }
-          );
-
-          console.log(`Saved page draft successfully`);
-        } catch (error) {
-          console.error(
-            `Failed to auto-save page: ${cmsHostname}/api/pages/${siteId}/${pageId}. Error: ${error}`
-          );
-        }
-      }, 60000);
-    }
-  }
+  doc.authorization = authorization;
+  doc.roomType = roomType;
+  doc.siteId = siteId;
+  doc.pageId = pageId;
 
   doc.conns.set(conn, new Set());
 

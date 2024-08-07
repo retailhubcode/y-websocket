@@ -39,7 +39,7 @@ server.on("upgrade", async (request, socket, head) => {
   }
 
   const cmsHostname =
-    process.env.CMS_HOSTNAME || "https://admin.retailhub.com.br";
+    process.env.CMS_HOSTNAME || "https://api-prod.retailhub.com.br";
 
   // try {
   //   await fetch(`${cmsHostname}/api/me`, {
