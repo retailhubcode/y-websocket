@@ -112,7 +112,7 @@ const updateHandler = (update, _origin, doc, _tr) => {
               `${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`,
               {
                 headers: {
-                  Authorization: doc.authorization,
+                  Authorization: `Bearer ${doc.authorization}`,
                   Origin: cmsHostname,
                   Referer: `${cmsHostname}/`,
                 },
@@ -145,7 +145,7 @@ const updateHandler = (update, _origin, doc, _tr) => {
             },
             {
               headers: {
-                Authorization: doc.authorization,
+                Authorization: `Bearer ${doc.authorization}`,
                 Origin: cmsHostname,
                 Referer: `${cmsHostname}/`,
               },

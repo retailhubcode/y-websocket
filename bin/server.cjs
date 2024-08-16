@@ -61,7 +61,7 @@ server.on("upgrade", async (request, socket, head) => {
     if (roomType === "page-components") {
       await fetch(`${cmsHostname}/api/pages/${siteId}/${pageId}`, {
         headers: {
-          Authorization: authorization,
+          Authorization: `Bearer ${authorization}`,
           Origin: cmsHostname,
           Referer: `${cmsHostname}/`,
         },
@@ -69,7 +69,7 @@ server.on("upgrade", async (request, socket, head) => {
     } else if (roomType === "header" || roomType === "footer") {
       await fetch(`${cmsHostname}/api/pages/${siteId}`, {
         headers: {
-          Authorization: authorization,
+          Authorization: `Bearer ${authorization}`,
           Origin: cmsHostname,
           Referer: `${cmsHostname}/`,
         },
