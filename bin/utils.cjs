@@ -121,11 +121,11 @@ const updateHandler = (update, _origin, doc, _tr) => {
           ).data;
 
           console.log(
-            `Saving page draft: ${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`
+            `Saving page draft: ${cmsHostname}/api/pages/${doc.pageId}`
           );
 
           await axios.patch(
-            `${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`,
+            `${cmsHostname}/api/pages/${doc.pageId}`,
             {
               ...originalData,
 
