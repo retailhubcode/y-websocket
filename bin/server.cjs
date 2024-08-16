@@ -59,21 +59,32 @@ server.on("upgrade", async (request, socket, head) => {
 
   try {
     if (roomType === "page-components") {
-      await fetch(`${cmsHostname}/api/pages/${siteId}/${pageId}`, {
-        headers: {
-          Authorization: `Bearer ${authorization}`,
-          Origin: cmsHostname,
-          Referer: `${cmsHostname}/`,
-        },
-      });
+      const result = await fetch(
+        `${cmsHostname}/api/pages/${siteId}/${pageId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authorization}`,
+            Origin: cmsHostname,
+            Referer: `${cmsHostname}/`,
+          },
+        }
+      );
+
+      if (!result.ok) {
+        throw new Error("Unauthorized user.");
+      }
     } else if (roomType === "header" || roomType === "footer") {
-      await fetch(`${cmsHostname}/api/pages/${siteId}`, {
+      const result = await fetch(`${cmsHostname}/api/pages/${siteId}?limit=1`, {
         headers: {
           Authorization: `Bearer ${authorization}`,
           Origin: cmsHostname,
           Referer: `${cmsHostname}/`,
         },
       });
+
+      if (!result.ok) {
+        throw new Error("Unauthorized user.");
+      }
     } else {
       console.log("Invalid room type.");
       socket.destroy();
