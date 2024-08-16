@@ -113,8 +113,6 @@ const updateHandler = (update, _origin, doc, _tr) => {
               {
                 headers: {
                   Authorization: `Bearer ${doc.authorization}`,
-                  Origin: cmsHostname,
-                  Referer: `${cmsHostname}/`,
                 },
               }
             )
@@ -146,8 +144,6 @@ const updateHandler = (update, _origin, doc, _tr) => {
             {
               headers: {
                 Authorization: `Bearer ${doc.authorization}`,
-                Origin: cmsHostname,
-                Referer: `${cmsHostname}/`,
               },
             }
           );

@@ -64,8 +64,6 @@ server.on("upgrade", async (request, socket, head) => {
         {
           headers: {
             Authorization: `Bearer ${authorization}`,
-            Origin: cmsHostname,
-            Referer: `${cmsHostname}/`,
           },
         }
       );
@@ -77,8 +75,6 @@ server.on("upgrade", async (request, socket, head) => {
       const result = await fetch(`${cmsHostname}/api/pages/${siteId}?limit=1`, {
         headers: {
           Authorization: `Bearer ${authorization}`,
-          Origin: cmsHostname,
-          Referer: `${cmsHostname}/`,
         },
       });
 
