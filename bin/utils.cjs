@@ -128,8 +128,8 @@ const updateHandler = (update, _origin, doc, _tr) => {
               ...originalData,
 
               draft: {
-                components: pageData.rootComponents
-                  .map((componentId) => pageData.components[componentId])
+                components: pageData.data.rootComponents
+                  .map((componentId) => pageData.data.components[componentId])
                   .filter((component) => component)
                   .map((component) => {
                     return {
