@@ -87,80 +87,80 @@ const messageAwareness = 1;
  * @param {any} _tr
  */
 const updateHandler = (update, _origin, doc, _tr) => {
-  if (doc.roomType === "page-components") {
-    if (!doc.timeout) {
-      console.log("Auto-saving draft");
+  // if (doc.roomType === "page-components") {
+  //   if (!doc.timeout) {
+  //     console.log("Auto-saving draft");
 
-      (async () => {
-        try {
-          const pageData = {};
+  //     (async () => {
+  //       try {
+  //         const pageData = {};
 
-          doc.share.forEach((value, key) => {
-            const val = doc.getMap(key);
+  //         doc.share.forEach((value, key) => {
+  //           const val = doc.getMap(key);
 
-            pageData[key] = val.toJSON();
-          });
+  //           pageData[key] = val.toJSON();
+  //         });
 
-          console.log(
-            `Fetching page data: ${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`
-          );
+  //         console.log(
+  //           `Fetching page data: ${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`
+  //         );
 
-          console.log(`Authorization: ${doc.authorization}`);
+  //         console.log(`Authorization: ${doc.authorization}`);
 
-          const originalData = (
-            await axios.get(
-              `${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`,
-              {
-                headers: {
-                  Authorization: `Bearer ${doc.authorization}`,
-                },
-              }
-            )
-          ).data;
+  //         const originalData = (
+  //           await axios.get(
+  //             `${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}`,
+  //             {
+  //               headers: {
+  //                 Authorization: `Bearer ${doc.authorization}`,
+  //               },
+  //             }
+  //           )
+  //         ).data;
 
-          console.log(
-            `Saving page draft: ${cmsHostname}/api/pages/${doc.pageId}`
-          );
+  //         console.log(
+  //           `Saving page draft: ${cmsHostname}/api/pages/${doc.pageId}`
+  //         );
 
-          await axios.patch(
-            `${cmsHostname}/api/pages/${doc.pageId}`,
-            {
-              ...originalData,
+  //         await axios.patch(
+  //           `${cmsHostname}/api/pages/${doc.pageId}`,
+  //           {
+  //             ...originalData,
 
-              draft: {
-                components: pageData.data.rootComponents
-                  .map((componentId) => pageData.data.components[componentId])
-                  .filter((component) => component)
-                  .map((component) => {
-                    return {
-                      uuid: component.id,
-                      title: "",
-                      component: component.name,
-                      componentData: component.data,
-                    };
-                  }),
-              },
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${doc.authorization}`,
-              },
-            }
-          );
+  //             draft: {
+  //               components: pageData.data.rootComponents
+  //                 .map((componentId) => pageData.data.components[componentId])
+  //                 .filter((component) => component)
+  //                 .map((component) => {
+  //                   return {
+  //                     uuid: component.id,
+  //                     title: "",
+  //                     component: component.name,
+  //                     componentData: component.data,
+  //                   };
+  //                 }),
+  //             },
+  //           },
+  //           {
+  //             headers: {
+  //               Authorization: `Bearer ${doc.authorization}`,
+  //             },
+  //           }
+  //         );
 
-          console.log(`Saved page draft successfully`);
-        } catch (error) {
-          console.error(
-            `Failed to auto-save page: ${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}. Error: ${error}`
-          );
-        }
-      })();
+  //         console.log(`Saved page draft successfully`);
+  //       } catch (error) {
+  //         console.error(
+  //           `Failed to auto-save page: ${cmsHostname}/api/pages/${doc.siteId}/${doc.pageId}. Error: ${error}`
+  //         );
+  //       }
+  //     })();
 
-      doc.timeout = setInterval(() => {
-        doc.timeout = null;
-      }, 60000);
-    }
-  }
+  //     doc.timeout = setInterval(() => {
+  //       doc.timeout = null;
+  //     }, 60000);
+  //   }
+  // }
 
   const encoder = encoding.createEncoder();
   encoding.writeVarUint(encoder, messageSync);
