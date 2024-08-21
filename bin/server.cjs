@@ -57,40 +57,40 @@ server.on("upgrade", async (request, socket, head) => {
 
   const [roomType, siteId, pageId] = roomId.split(":");
 
-  try {
-    if (roomType === "page-components") {
-      const result = await fetch(
-        `${cmsHostname}/api/pages/${siteId}/${pageId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${authorization}`,
-          },
-        }
-      );
+  // try {
+  //   if (roomType === "page-components") {
+  //     const result = await fetch(
+  //       `${cmsHostname}/api/pages/${siteId}/${pageId}`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${authorization}`,
+  //         },
+  //       }
+  //     );
 
-      if (!result.ok) {
-        throw new Error("Unauthorized user.");
-      }
-    } else if (roomType === "header" || roomType === "footer") {
-      const result = await fetch(`${cmsHostname}/api/pages/${siteId}?limit=1`, {
-        headers: {
-          Authorization: `Bearer ${authorization}`,
-        },
-      });
+  //     if (!result.ok) {
+  //       throw new Error("Unauthorized user.");
+  //     }
+  //   } else if (roomType === "header" || roomType === "footer") {
+  //     const result = await fetch(`${cmsHostname}/api/pages/${siteId}?limit=1`, {
+  //       headers: {
+  //         Authorization: `Bearer ${authorization}`,
+  //       },
+  //     });
 
-      if (!result.ok) {
-        throw new Error("Unauthorized user.");
-      }
-    } else {
-      console.log("Invalid room type.");
-      socket.destroy();
-      return;
-    }
-  } catch (error) {
-    console.log(`Unauthorized user. ${error}`);
-    socket.destroy();
-    return;
-  }
+  //     if (!result.ok) {
+  //       throw new Error("Unauthorized user.");
+  //     }
+  //   } else {
+  //     console.log("Invalid room type.");
+  //     socket.destroy();
+  //     return;
+  //   }
+  // } catch (error) {
+  //   console.log(`Unauthorized user. ${error}`);
+  //   socket.destroy();
+  //   return;
+  // }
 
   // You may check auth of request here..
   // Call `wss.HandleUpgrade` *after* you checked whether the client has access
