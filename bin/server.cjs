@@ -41,56 +41,71 @@ server.on("upgrade", async (request, socket, head) => {
   const cmsHostname =
     process.env.CMS_HOSTNAME || "https://api-prod.retailhub.com.br";
 
-  // try {
-  //   await fetch(`${cmsHostname}/api/me`, {
-  //     headers: {
-  //       Authorization: authorization,
-  //       Origin: cmsHostname,
-  //       Referer: `${cmsHostname}/`,
-  //     },
-  //   });
-  // } catch (error) {
-  //   console.log(`Unauthorized user. ${error}`);
-  //   socket.destroy();
-  //   return;
-  // }
+  try {
+    await fetch(`${cmsHostname}/api/me`, {
+      headers: {
+        Authorization: authorization,
+        Origin: cmsHostname,
+        Referer: `${cmsHostname}/`,
+      },
+    });
+  } catch (error) {
+    console.log(`Unauthorized user. ${error}`);
+    socket.destroy();
+    return;
+  }
 
-  const [roomType, siteId, pageId] = roomId.split(":");
+  const [roomType, siteId, resourceId] = roomId.split(":");
 
-  // try {
-  //   if (roomType === "page-components") {
-  //     const result = await fetch(
-  //       `${cmsHostname}/api/pages/${siteId}/${pageId}`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${authorization}`,
-  //         },
-  //       }
-  //     );
+  try {
+    if (roomType === "page-components") {
+      const result = await fetch(
+        `${cmsHostname}/api/pages/${siteId}/${resourceId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authorization}`,
+          },
+        }
+      );
 
-  //     if (!result.ok) {
-  //       throw new Error("Unauthorized user.");
-  //     }
-  //   } else if (roomType === "header" || roomType === "footer") {
-  //     const result = await fetch(`${cmsHostname}/api/pages/${siteId}?limit=1`, {
-  //       headers: {
-  //         Authorization: `Bearer ${authorization}`,
-  //       },
-  //     });
+      if (!result.ok) {
+        throw new Error("Unauthorized user.");
+      }
+    } else if (roomType === "header" || roomType === "footer") {
+      const result = await fetch(`${cmsHostname}/api/pages/${siteId}?limit=1`, {
+        headers: {
+          Authorization: `Bearer ${authorization}`,
+        },
+      });
 
-  //     if (!result.ok) {
-  //       throw new Error("Unauthorized user.");
-  //     }
-  //   } else {
-  //     console.log("Invalid room type.");
-  //     socket.destroy();
-  //     return;
-  //   }
-  // } catch (error) {
-  //   console.log(`Unauthorized user. ${error}`);
-  //   socket.destroy();
-  //   return;
-  // }
+      if (!result.ok) {
+        throw new Error("Unauthorized user.");
+      }
+    } else if (roomType === "modal") {
+      const result = await fetch(
+        `${cmsHostname}/api/modals/${siteId}/${resourceId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${authorization}`,
+          },
+        }
+      );
+
+      if (!result.ok) {
+        throw new Error("Unauthorized user.");
+      }
+    } else {
+      console.log("Invalid room type.");
+      socket.destroy();
+      return;
+    }
+  } catch (error) {
+    console.log(`Unauthorized user. ${error}`);
+    socket.destroy();
+    return;
+  }
+
+  console.log("Authorized user.");
 
   // You may check auth of request here..
   // Call `wss.HandleUpgrade` *after* you checked whether the client has access
@@ -105,7 +120,7 @@ server.on("upgrade", async (request, socket, head) => {
         authorization,
         roomType,
         siteId,
-        pageId,
+        pageId: resourceId,
       });
     }
   );
